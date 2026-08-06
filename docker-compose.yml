@@ -1,0 +1,45 @@
+# Hexa AI — full stack (frontend + backend) for container deployment.
+#   docker compose up --build
+# The frontend (nginx) serves the SPA and reverse-proxies /api + /uploads to the
+# backend, so the browser only ever talks to one origin (no CORS in production).
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      DATABASE_URL: "file:./data/hexa.db"
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -hex 32)}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-12h}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+      UPLOAD_DIR: ./uploads
+      MAX_UPLOAD_BYTES: ${MAX_UPLOAD_BYTES:-2097152}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@hexa.ai}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-ChangeMe!123}
+      ADMIN_NAME: ${ADMIN_NAME:-Hexa Admin}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      CONTACT_TO: ${CONTACT_TO:-info@hexacyber.ai}
+    volumes:
+      # Prisma resolves the sqlite path relative to prisma/schema.prisma → /app/prisma/data
+      - hexa-data:/app/prisma/data
+      - hexa-uploads:/app/uploads
+    expose:
+      - "4000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+
+volumes:
+  hexa-data:
+  hexa-uploads:

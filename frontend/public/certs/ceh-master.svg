@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 132" fill="none">
+  <polygon points="60,3 113,33.5 113,98.5 60,129 7,98.5 7,33.5" fill="#0E1013" stroke="#E23B3B" stroke-width="3.5" stroke-linejoin="round"/>
+  <polygon points="60,14 103,39 103,93 60,118 17,93 17,39" fill="none" stroke="#E23B3B" stroke-opacity="0.22" stroke-width="1.4" stroke-linejoin="round"/>
+  <text x="60" y="58" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="26" fill="#F2F4F7" letter-spacing="1">CEH</text>
+  <text x="60" y="80" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="700" font-size="15" fill="#E23B3B" letter-spacing="2">MASTER</text>
+  <text x="60" y="100" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-weight="600" font-size="8" fill="#E23B3B" letter-spacing="1.6">EC-COUNCIL</text>
+</svg>

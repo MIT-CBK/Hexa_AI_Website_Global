@@ -1,0 +1,155 @@
+// Hexa AI — backend data model.
+// SQLite for simplicity/lightness; switch to Postgres later by changing only
+// `provider` + DATABASE_URL (the schema below is provider-agnostic).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// Admin users — password is an Argon2 hash, never plaintext.
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String
+  role          String   @default("admin")
+  // MFA (TOTP). totpSecret is set during setup; mfaEnabled flips on after the
+  // first valid code. recoveryCodes is a JSON array of Argon2-hashed codes.
+  mfaEnabled    Boolean  @default(false)
+  totpSecret    String?
+  recoveryCodes String   @default("[]")
+  createdAt     DateTime @default(now())
+}
+
+/// Newsletter posts. `tags` is a JSON-encoded string[] (SQLite has no arrays).
+model Post {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  excerpt     String
+  category    String
+  coverImage  String?
+  content     String
+  author      String
+  tags        String   @default("[]")
+  attachments String   @default("[]")
+  published   Boolean  @default(true)
+  publishedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([publishedAt])
+}
+
+/// Editable site content (CMS). Single row holding the whole content document
+/// as a validated JSON string — lets admins change copy without a redeploy.
+model SiteContent {
+  id        String   @id @default("singleton")
+  data      String
+  updatedAt DateTime @updatedAt
+}
+
+/// Customers (bought a solution/service) — self-register, separate from admins.
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  company   String?
+  code      String? // the customer code used at registration
+  products  String   @default("[]") // JSON: entitled product abbrs (snapshot from the code)
+  createdAt DateTime @default(now())
+  tickets   Ticket[]
+}
+
+/// Customer codes — admin-issued; required (and validated) at registration so
+/// only paying customers can create an account. A code can be shared by a
+/// company's users; deactivate to block further sign-ups.
+model CustomerCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  label     String
+  products  String   @default("[]") // JSON: product abbrs this code grants access to
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+/// Support tickets raised by a customer.
+model Ticket {
+  id           String   @id @default(cuid())
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  subject      String
+  product      String
+  severity     String   @default("medium")
+  description  String
+  contactEmail String
+  attachments  String   @default("[]") // JSON: [{ url, name }]
+  status       String   @default("open")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+/// Downloadable files & documents (installers, updates, guides, KB articles).
+/// One flexible model: `kind` (download|document) + `category` group it; a file
+/// (fileUrl) and/or markdown `content` (KB) holds the payload.
+model Resource {
+  id          String   @id @default(cuid())
+  kind        String // "download" | "document"
+  category    String // installation|hotfix|fixpack|agent|collector|manager|product-guide|installation-guide|kb
+  product     String? // offering abbr (NMS, SIEM…) or null = general
+  title       String
+  version     String?
+  description String?
+  fileUrl     String?
+  fileName    String?
+  fileSize    Int?
+  content     String? // markdown (KB articles)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([kind])
+}
+
+/// Admin-editable application settings (SMTP, etc.) as a single JSON row.
+/// Secrets inside (e.g. SMTP password) are encrypted at rest (AES-256-GCM).
+model AppSetting {
+  id        String   @id @default("singleton")
+  data      String
+  updatedAt DateTime @updatedAt
+}
+
+/// Order / quote requests from the product "Buy now" configurator.
+/// `details` is the full JSON configuration (deployment, capacity, add-ons…).
+model Order {
+  id         String   @id @default(cuid())
+  product    String
+  deployment String
+  email      String
+  name       String?
+  company    String?
+  details    String
+  status     String   @default("new")
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+/// Contact form submissions.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String?
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
