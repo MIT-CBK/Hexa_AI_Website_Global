@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client"
+import { getVisitorId } from "@/lib/analytics"
 import type { Deployment } from "@/data/pricing"
 
 export interface OrderPayload {
@@ -39,7 +40,7 @@ export interface Order {
 export const orderKeys = { all: ["orders"] as const }
 
 export const submitOrder = (body: OrderPayload) =>
-  api.post<{ ok: boolean; emailed: { buyer: boolean; admin: boolean } }>("/api/orders", body)
+  api.post<{ ok: boolean; emailed: { buyer: boolean; admin: boolean } }>("/api/orders", { ...body, visitorId: getVisitorId() })
 
 export const adminListOrders = () => api.get<Order[]>("/api/admin/orders")
 export const setOrderStatus = (id: string, status: string) =>

@@ -52,6 +52,7 @@ export const contactSchema = z.object({
   email: z.string().email().max(160),
   company: z.string().max(120).optional().nullable(),
   message: z.string().min(10).max(2000),
+  visitorId: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/).optional(),
 })
 
 /* ---- Customer support ---- */
@@ -175,11 +176,19 @@ export const orderSchema = z.object({
   company: z.string().max(120).optional(),
   role: z.string().max(80).optional(),
   notes: z.string().max(2000).optional(),
+  visitorId: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/).optional(),
 })
 export type OrderInput = z.infer<typeof orderSchema>
 
 export const orderStatusSchema = z.object({
   status: z.enum(["new", "contacted", "won", "lost"]),
+})
+
+/* ---- Visitor analytics ---- */
+export const trackSchema = z.object({
+  visitorId: z.string().regex(/^[A-Za-z0-9_-]{8,64}$/),
+  path: z.string().startsWith("/").max(300),
+  referrer: z.string().max(500).optional(),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>

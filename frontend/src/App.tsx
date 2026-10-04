@@ -10,6 +10,7 @@ import NewsletterPost from "@/pages/NewsletterPost"
 import Support from "@/pages/Support"
 import Admin from "@/pages/Admin"
 import NotFound from "@/pages/NotFound"
+import { trackPageview } from "@/lib/analytics"
 
 /** Scroll to top on route change, or to the hash target if present. */
 function ScrollManager() {
@@ -27,12 +28,22 @@ function ScrollManager() {
   return null
 }
 
+/** Records one page view per route change (admin excluded). */
+function PageviewTracker() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    trackPageview(pathname)
+  }, [pathname])
+  return null
+}
+
 export default function App() {
   return (
     <div className="relative min-h-screen">
       <div className="noise" aria-hidden="true" />
       <ScrollProgress />
       <ScrollManager />
+      <PageviewTracker />
       <Navbar />
       <main>
         <Routes>

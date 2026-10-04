@@ -11,7 +11,7 @@ export async function orderRoutes(app: FastifyInstance) {
     async (req, reply) => {
       const parsed = orderSchema.safeParse(req.body)
       if (!parsed.success) return reply.code(400).send({ error: "Invalid order details" })
-      const o = parsed.data
+      const { visitorId, ...o } = parsed.data
 
       await prisma.order.create({
         data: {
@@ -21,6 +21,7 @@ export async function orderRoutes(app: FastifyInstance) {
           name: o.name ?? null,
           company: o.company ?? null,
           details: JSON.stringify(o),
+          visitorId: visitorId ?? null,
           status: "new",
         },
       })

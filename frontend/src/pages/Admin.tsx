@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   FolderDown,
   ShoppingCart,
+  Activity,
 } from "lucide-react"
 import { isAuthenticated, login, logout } from "@/lib/auth"
 import { AccountSettings } from "@/components/admin/AccountSettings"
@@ -27,6 +28,7 @@ import { ContentEditor } from "@/components/admin/ContentEditor"
 import { TicketsPanel } from "@/components/admin/TicketsPanel"
 import { CustomerCodesPanel } from "@/components/admin/CustomerCodesPanel"
 import { ResourcesPanel } from "@/components/admin/ResourcesPanel"
+import { AnalyticsPanel } from "@/components/admin/AnalyticsPanel"
 import { adminListPosts, deletePost, postKeys, type Post } from "@/lib/newsletter"
 import {
   adminListContacts,
@@ -43,7 +45,7 @@ import { formatDate } from "@/lib/utils"
 import { cn } from "@/lib/utils"
 
 type View = { mode: "list" } | { mode: "create" } | { mode: "edit"; post: Post }
-type Tab = "posts" | "orders" | "contacts" | "tickets" | "resources" | "content" | "email" | "account"
+type Tab = "posts" | "orders" | "contacts" | "analyst" | "tickets" | "resources" | "content" | "email" | "account"
 
 export default function Admin() {
   const [authed, setAuthed] = useState(() => isAuthenticated())
@@ -196,7 +198,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-1 border-b border-line">
+      <div className="mt-6 flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>button]:shrink-0 [&>button]:whitespace-nowrap">
         <TabButton active={tab === "posts"} onClick={() => setTab("posts")} icon={<Newspaper className="size-4" />}>
           Posts
         </TabButton>
@@ -205,6 +207,9 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
         </TabButton>
         <TabButton active={tab === "contacts"} onClick={() => setTab("contacts")} icon={<Inbox className="size-4" />}>
           Inquiries
+        </TabButton>
+        <TabButton active={tab === "analyst"} onClick={() => setTab("analyst")} icon={<Activity className="size-4" />}>
+          Analyst
         </TabButton>
         <TabButton active={tab === "tickets"} onClick={() => setTab("tickets")} icon={<LifeBuoy className="size-4" />}>
           Support
@@ -226,6 +231,7 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
       {tab === "posts" && <PostsPanel onEdit={(post) => setView({ mode: "edit", post })} />}
       {tab === "orders" && <OrdersPanel />}
       {tab === "contacts" && <ContactsPanel />}
+      {tab === "analyst" && <AnalyticsPanel />}
       {tab === "tickets" && (
         <div className="mt-6 flex flex-col gap-5">
           <CustomerCodesPanel />
@@ -255,7 +261,7 @@ function TabButton({
     <button
       onClick={onClick}
       className={cn(
-        "-mb-px inline-flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors",
+        "-mb-px inline-flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
         active
           ? "border-cyan text-white"
           : "border-transparent text-muted hover:text-white",

@@ -20,6 +20,7 @@ export async function contactRoutes(app: FastifyInstance) {
           email: data.email,
           company: data.company ?? null,
           message: data.message,
+          visitorId: data.visitorId ?? null,
         },
       })
       const emailed = await sendContactEmail(data, req.log)

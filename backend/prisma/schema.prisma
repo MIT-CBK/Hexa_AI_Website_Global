@@ -135,6 +135,7 @@ model Order {
   name       String?
   company    String?
   details    String
+  visitorId  String? // analytics visitor that submitted this (see Visit)
   status     String   @default("new")
   createdAt  DateTime @default(now())
 
@@ -148,8 +149,27 @@ model ContactMessage {
   email     String
   company   String?
   message   String
+  visitorId String? // analytics visitor that submitted this (see Visit)
   handled   Boolean  @default(false)
   createdAt DateTime @default(now())
 
+  @@index([createdAt])
+}
+
+/// Page-view log for the admin "Analyst" dashboard. visitorId is a random id
+/// kept in the visitor's browser; location comes from Cloudflare headers.
+model Visit {
+  id        String   @id @default(cuid())
+  visitorId String
+  ip        String
+  country   String?
+  region    String?
+  city      String?
+  path      String
+  referrer  String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([visitorId])
   @@index([createdAt])
 }

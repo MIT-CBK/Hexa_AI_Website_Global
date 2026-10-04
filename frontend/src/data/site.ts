@@ -3,6 +3,7 @@ import type { L } from "@/i18n"
 export const SITE = {
   name: "Hexa AI",
   email: "info@hexacyber.ai",
+  linkedin: "https://www.linkedin.com/company/hexa-cyber-ai/",
 } as const
 
 export const SITE_DESCRIPTION: L = {

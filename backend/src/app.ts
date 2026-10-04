@@ -24,6 +24,8 @@ import { customerRoutes } from "./routes/customer.js"
 import { supportRoutes, adminTicketsRoutes } from "./routes/support.js"
 import { adminCustomerCodesRoutes } from "./routes/customer-codes.js"
 import { adminResourcesRoutes } from "./routes/resources.js"
+import { trackRoutes, adminAnalyticsRoutes } from "./routes/analytics.js"
+import { clientIp } from "./lib/client-ip.js"
 import { adminSettingsRoutes } from "./routes/settings.js"
 import { orderRoutes, adminOrdersRoutes } from "./routes/orders.js"
 
@@ -69,7 +71,9 @@ export async function buildApp() {
     credentials: true,
   })
 
-  await app.register(rateLimit, { max: 120, timeWindow: "1 minute" })
+  // Key by the real visitor IP — behind Cloudflare/Caddy/nginx the socket IP is
+  // the proxy, which would otherwise put every visitor in one shared bucket.
+  await app.register(rateLimit, { max: 120, timeWindow: "1 minute", keyGenerator: (req) => clientIp(req) })
 
   await app.register(jwt, {
     secret: env.JWT_SECRET,
@@ -134,6 +138,7 @@ export async function buildApp() {
   await app.register(contentRoutes, { prefix: "/api/content" })
   await app.register(customerRoutes, { prefix: "/api/customer" })
   await app.register(orderRoutes, { prefix: "/api/orders" })
+  await app.register(trackRoutes, { prefix: "/api/track" })
 
   // --- Customer support (customer-auth for the whole scope) ---
   await app.register(
@@ -159,6 +164,7 @@ export async function buildApp() {
       await admin.register(adminResourcesRoutes, { prefix: "/resources" })
       await admin.register(adminSettingsRoutes, { prefix: "/settings" })
       await admin.register(adminOrdersRoutes, { prefix: "/orders" })
+      await admin.register(adminAnalyticsRoutes, { prefix: "/analytics" })
     },
     { prefix: "/api/admin" },
   )

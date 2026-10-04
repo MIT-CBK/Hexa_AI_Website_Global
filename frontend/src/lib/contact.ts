@@ -1,4 +1,5 @@
 import { api } from "@/lib/api-client"
+import { getVisitorId } from "@/lib/analytics"
 
 export interface ContactInput {
   name: string
@@ -24,7 +25,7 @@ export const contactKeys = {
 
 /* ---- Public ---- */
 export const submitContact = (data: ContactInput) =>
-  api.post<{ ok: boolean; emailed: boolean }>("/api/contact", data)
+  api.post<{ ok: boolean; emailed: boolean }>("/api/contact", { ...data, visitorId: getVisitorId() })
 
 /* ---- Admin (require token) ---- */
 export const adminListContacts = () => api.get<ContactMessage[]>("/api/admin/contact")
